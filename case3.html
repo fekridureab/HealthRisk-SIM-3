@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HealthRisk Sim — Case 3: Strategic Risk | HCMT3006 UDST</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#F4F6FA;color:#0A1628;min-height:100vh}
+/* LOGIN */
+#loginView{position:fixed;inset:0;background:#002A5C;display:flex;align-items:center;justify-content:center;padding:16px;z-index:999}
+.lcard{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.lcard h1{font-size:22px;color:#002A5C;margin-bottom:2px;font-weight:700}
+.lcasebadge{display:inline-block;font-size:11px;background:#FFF3CD;color:#854F0B;padding:3px 10px;border-radius:4px;font-weight:700;margin-bottom:10px}
+.lsub{font-size:12px;color:#6B7A8D;margin-bottom:18px;line-height:1.55}
+.rtabs{display:flex;border:2px solid #002A5C;border-radius:8px;overflow:hidden;margin-bottom:16px}
+.rtab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:700;cursor:pointer;background:#F4F6FA;color:#6B7A8D;border:none;font-family:Arial,sans-serif}
+.rtab.on{background:#002A5C;color:#fff}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:11px;font-weight:700;color:#002A5C;margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+.fg input,.fg select{width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:7px;font-size:14px;font-family:Arial,sans-serif;color:#0A1628;background:#F4F6FA}
+.fg input:focus,.fg select:focus{outline:none;border-color:#00AEEF;background:#fff}
+.lbtn{width:100%;padding:12px;background:#002A5C;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;font-family:Arial,sans-serif}
+.lbtn:hover{background:#003A7A}
+.lerr{color:#C0392B;font-size:12px;margin-top:8px;text-align:center;display:none;font-weight:700;padding:8px;background:#FCEBEB;border-radius:6px;border:1px solid #F7C1C1}
+.lnote{font-size:11px;color:#6B7A8D;margin-top:10px;text-align:center;line-height:1.55}
+.id-locked-note{background:#E1F5EE;border:1px solid #1A7A4A;border-radius:6px;padding:8px 11px;font-size:12px;color:#085041;margin-top:6px;display:none}
+/* MAIN */
+#mainView{display:none}
+.hdr{background:#002A5C;padding:11px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.hdr-t{color:#00AEEF;font-size:15px;font-weight:700}
+.hdr-s{color:rgba(255,255,255,.4);font-size:10px}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rbadge{font-size:10px;padding:3px 10px;border-radius:100px;background:rgba(0,174,239,.15);color:#00AEEF;border:1px solid rgba(0,174,239,.3)}
+.casebadge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;background:#C8A951;color:#002A5C}
+.ibadge{background:#C8A951;color:#002A5C;font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;display:none}
+.hdr-u{font-size:11px;color:rgba(255,255,255,.5)}
+.nav{background:#fff;border-bottom:2px solid #E0E4EA;display:flex;padding:0 14px;overflow-x:auto}
+.nt{font-size:12px;font-weight:700;padding:11px 13px;color:#6B7A8D;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:Arial,sans-serif}
+.nt:hover{color:#002A5C}
+.nt.on{color:#002A5C;border-bottom-color:#00AEEF}
+.pg{display:none;padding:16px 18px;max-width:940px;margin:0 auto}
+.pg.on{display:block}
+/* SCENARIO */
+.sbox{background:#002A5C;border-radius:10px;padding:18px;color:#fff;margin-bottom:14px}
+.sbox h2{color:#00AEEF;font-size:16px;margin-bottom:4px}
+.sdt{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:9px;font-family:monospace}
+.sbox p{font-size:13px;line-height:1.75;color:rgba(255,255,255,.85)}
+.sbox p+p{margin-top:8px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:8px;margin-top:12px}
+.fact{background:rgba(255,255,255,.08);border-radius:7px;padding:9px;text-align:center}
+.fn{font-size:16px;font-weight:700;color:#00AEEF}
+.fn.r{color:#F09595}.fn.a{color:#FAC775}.fn.g{color:#9FE1CB}
+.fl{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
+.asb{background:#EBF2FB;border-radius:8px;padding:9px 13px;font-size:12px;color:#0C447C;line-height:1.6;margin-top:11px}
+/* ROUND LOCKED */
+.round-locked{background:#FFF3CD;border:2px solid #FAC775;border-radius:10px;padding:20px;text-align:center;margin:20px 0}
+.round-locked h3{color:#854F0B;font-size:16px;margin-bottom:6px}
+.round-locked p{font-size:13px;color:#633806;line-height:1.6}
+/* DECISIONS */
+.situation-box{background:#1A3A5C;border-radius:9px;padding:13px 15px;color:#fff;margin-bottom:13px;border-left:4px solid #00AEEF}
+.situation-box h4{color:#00AEEF;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.situation-box p{font-size:13px;line-height:1.65;color:rgba(255,255,255,.88)}
+.qcard{background:#fff;border:2px solid #E0E4EA;border-radius:9px;padding:13px;margin-bottom:9px}
+.ql{font-size:10px;color:#00AEEF;font-weight:700;margin-bottom:5px;text-transform:uppercase}
+.qt{font-size:13px;font-weight:700;color:#002A5C;line-height:1.45;margin-bottom:9px}
+.opt{display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border-radius:7px;border:2px solid #E0E4EA;cursor:pointer;font-size:12px;line-height:1.55;color:#0A1628;margin-bottom:5px;background:#fff;transition:all .1s}
+.opt:hover{background:#EBF2FB;border-color:#B5D4F4}
+.opt.sel{background:#E1F5EE;border-color:#1A7A4A}
+.opt.sel .ol{background:#1A7A4A;color:#fff}
+.ol{width:22px;height:22px;border-radius:4px;background:#F4F6FA;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;color:#6B7A8D}
+/* REFLECTION SECTION */
+.reflection-box{background:#fff;border:2px solid #00AEEF;border-radius:9px;padding:14px;margin-top:14px}
+.reflection-box h4{color:#002A5C;font-size:13px;font-weight:700;margin-bottom:10px;border-bottom:1px solid #E0E4EA;padding-bottom:6px}
+.reflection-q{margin-bottom:12px}
+.reflection-q label{display:block;font-size:12px;font-weight:700;color:#002A5C;margin-bottom:5px}
+.reflection-q textarea{width:100%;border:1px solid #ddd;border-radius:7px;padding:9px 11px;font-size:13px;font-family:Arial,sans-serif;color:#0A1628;resize:vertical;min-height:70px;background:#F4F6FA}
+.reflection-q textarea:focus{outline:none;border-color:#00AEEF;background:#fff}
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:Arial,sans-serif;display:inline-flex;align-items:center;gap:5px}
+.btn-p{background:#002A5C;color:#fff}.btn-p:disabled{opacity:.35;cursor:not-allowed}
+.btn-c{background:#00AEEF;color:#002A5C}
+.btn-o{background:#fff;color:#002A5C;border:2px solid #E0E4EA}
+.btn-r{background:#FCEBEB;color:#C0392B;border:2px solid #F7C1C1}
+.ok{background:#E1F5EE;border:2px solid #1A7A4A;border-radius:9px;padding:15px;text-align:center;margin-bottom:12px}
+.ok h3{color:#1A7A4A;font-size:15px}.ok p{font-size:12px;color:#085041;margin-top:3px}
+/* GROUP */
+.pbar{display:flex;align-items:center;gap:7px;padding:8px 11px;background:#F4F6FA;border-radius:7px;margin-bottom:11px;font-size:12px;color:#6B7A8D}
+.dot{width:9px;height:9px;border-radius:50%}
+.dr{background:#E24B4A}.da{background:#EF9F27}.dg{background:#1D9E75}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;margin-bottom:13px}
+.mc{border:2px solid #E0E4EA;border-radius:8px;padding:10px;background:#fff}
+.mn{font-size:12px;font-weight:700;color:#002A5C;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.av{width:22px;height:22px;border-radius:50%;background:#002A5C;color:#00AEEF;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mar{display:flex;align-items:center;gap:4px;margin-bottom:3px}
+.mq{font-size:10px;color:#6B7A8D;min-width:16px}
+.mv{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px}
+.vA{background:#EDE7F6;color:#3B1A6B}.vB{background:#EBF2FB;color:#0C447C}.vC{background:#E1F5EE;color:#085041}.vD{background:#FFF3CD;color:#633806}.vn{background:#F4F6FA;color:#6B7A8D}
+.card{background:#fff;border:2px solid #E0E4EA;border-radius:9px;overflow:hidden;margin-bottom:13px}
+.ch{padding:10px 13px;border-bottom:2px solid #E0E4EA;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.ch h3{font-size:13px;font-weight:700;color:#002A5C}
+.cb{padding:12px 13px}
+.db{margin-bottom:8px}
+.db-top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+/* GD FORM */
+.gdq{background:#F4F6FA;border:2px solid #E0E4EA;border-radius:8px;padding:11px;margin-bottom:10px}
+.gdqt{font-size:12px;font-weight:700;color:#002A5C;margin-bottom:8px;line-height:1.45}
+.gdopts{display:flex;gap:8px;flex-wrap:wrap}
+.gdo input[type=radio]{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.gdo label{display:inline-flex;align-items:center;justify-content:center;min-width:44px;font-size:13px;font-weight:700;cursor:pointer;padding:7px 16px;border:2px solid #E0E4EA;border-radius:7px;background:#fff;color:#0A1628;user-select:none;transition:all .1s}
+.gdo label:hover{background:#EBF2FB;border-color:#B5D4F4}
+.gdo input[type=radio]:checked+label{background:#E1F5EE;border-color:#1A7A4A;color:#1A7A4A}
+/* RISK REGISTER */
+.met{display:grid;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));gap:8px;margin-bottom:12px}
+.mc2{background:#fff;border:2px solid #E0E4EA;border-radius:8px;padding:10px 12px}
+.mn2{font-size:20px;font-weight:700;color:#002A5C}
+.ml{font-size:10px;color:#6B7A8D;margin-top:1px}
+.mc2.mrd .mn2{color:#C0392B}.mc2.mgr .mn2{color:#1A7A4A}.mc2.mam .mn2{color:#D4860A}
+.rr-wrap{overflow-x:auto;border-radius:8px;border:2px solid #E0E4EA}
+.rrt{width:100%;border-collapse:collapse;font-size:11px;min-width:720px}
+.rrt th{background:#002A5C;color:#fff;padding:8px;text-align:left;font-size:10px;white-space:nowrap}
+.rrt td{padding:7px 8px;border-bottom:1px solid #E0E4EA;vertical-align:middle}
+.rrt tr:hover td{background:#F7F9FC}
+.lx{background:#FCEBEB;color:#C0392B;padding:2px 5px;border-radius:3px;font-size:10px;font-weight:700}
+.lh{background:#FFF3CD;color:#854F0B;padding:2px 5px;border-radius:3px;font-size:10px;font-weight:700}
+.lm{background:#E6F1FB;color:#0C447C;padding:2px 5px;border-radius:3px;font-size:10px;font-weight:700}
+.ll{background:#E1F5EE;color:#1A7A4A;padding:2px 5px;border-radius:3px;font-size:10px;font-weight:700}
+.so{background:#FCEBEB;color:#C0392B;padding:2px 5px;border-radius:3px;font-size:10px}
+.spr{background:#FFF3CD;color:#854F0B;padding:2px 5px;border-radius:3px;font-size:10px}
+.sdn{background:#E1F5EE;color:#1A7A4A;padding:2px 5px;border-radius:3px;font-size:10px}
+.dop{background:#EBF2FB;color:#1A3A6B;padding:2px 5px;border-radius:3px;font-size:10px}
+.dcl{background:#FCEBEB;color:#8B1A1A;padding:2px 5px;border-radius:3px;font-size:10px}
+.dfi{background:#FFF8E1;color:#5C3A00;padding:2px 5px;border-radius:3px;font-size:10px}
+.dlr{background:#EDE7F6;color:#3B1A6B;padding:2px 5px;border-radius:3px;font-size:10px}
+.dhc{background:#E0F5ED;color:#084A3A;padding:2px 5px;border-radius:3px;font-size:10px}
+.dst{background:#E8E4F4;color:#3C1A7A;padding:2px 5px;border-radius:3px;font-size:10px}
+.ri{border:2px solid #00AEEF;border-radius:4px;padding:3px 5px;font-size:11px;background:#EBF2FB;color:#002A5C;font-family:Arial,sans-serif}
+.ex-row td{background:#FFFBEE!important}
+.warn{background:#FFF3CD;border:1px solid #FAC775;border-radius:7px;padding:9px 12px;font-size:12px;color:#633806;margin-bottom:11px}
+/* LEADERBOARD */
+.lbr{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:9px;border:2px solid #E0E4EA;background:#fff;margin-bottom:8px}
+.lrk{font-size:22px;font-weight:700;min-width:28px;text-align:center}
+.rk1{color:#C8A951}.rk2{color:#6B7A8D}.rk3{color:#CD7F32}
+.lrn{flex:1;font-size:13px;font-weight:700;color:#002A5C}
+.lrs{font-size:10px;color:#6B7A8D}
+.lrt{font-size:17px;font-weight:700;color:#002A5C}
+.lbb{height:6px;background:#F4F6FA;border-radius:3px;overflow:hidden;width:80px}
+.lbf{height:100%;background:#00AEEF;border-radius:3px}
+/* SCORE */
+.score-box{background:#002A5C;border-radius:9px;padding:14px;color:#fff;margin-top:12px}
+.score-box h3{color:#00AEEF;font-size:14px;margin-bottom:10px}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:13px}
+.srow:last-child{border:none}
+.spts{font-size:20px;font-weight:700;color:#00AEEF}
+/* INSTRUCTOR */
+.ip{background:rgba(200,169,81,.08);border:2px solid rgba(200,169,81,.3);border-radius:9px;padding:13px;margin-bottom:13px}
+.ip h3{font-size:13px;font-weight:700;color:#D4860A;margin-bottom:10px}
+.igc{background:#fff;border:2px solid #E0E4EA;border-radius:8px;padding:11px;margin-bottom:9px}
+.igt{font-size:13px;font-weight:700;color:#002A5C;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.imr{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid #E0E4EA;font-size:12px;flex-wrap:wrap}
+.imr:last-child{border:none}
+.ians{display:flex;gap:3px}
+.stit{font-size:15px;font-weight:700;color:#002A5C;margin-bottom:11px}
+.tip{background:#EBF2FB;border-radius:7px;padding:8px 11px;font-size:12px;color:#0C447C;line-height:1.6;margin-top:10px}
+.emp{text-align:center;padding:28px 16px;color:#6B7A8D;font-size:12px}
+.emp h4{font-size:14px;font-weight:700;color:#002A5C;margin-bottom:4px}
+.rbtns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px}
+.student-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #E0E4EA;font-size:12px;flex-wrap:wrap}
+.student-row:last-child{border:none}
+.del-btn{background:none;border:1px solid #F7C1C1;color:#C0392B;cursor:pointer;font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px}
+.del-btn:hover{background:#FCEBEB}
+.group-admin-card{background:#fff;border:2px solid #E0E4EA;border-radius:8px;padding:12px;margin-bottom:10px}
+.group-admin-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.group-admin-title h4{font-size:13px;font-weight:700;color:#002A5C}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView">
+ <div class="lcard">
+  <h1>HealthRisk Sim</h1>
+  <span class="lcasebadge">Case 3 — Strategic Risk</span>
+  <p class="lsub">Al-Khair Hospital · Reputation Under Fire<br>HCMT3006 · UDST College of Business · Spring 2026</p>
+  <div class="rtabs">
+   <button class="rtab on" id="tabS" onclick="setRole('student')">Student</button>
+   <button class="rtab" id="tabL" onclick="setRole('leader')">Group Leader</button>
+   <button class="rtab" id="tabI" onclick="setRole('instructor')">Instructor</button>
+  </div>
+  <div id="stdFields">
+   <div class="fg"><label>Full Name</label><input type="text" id="iName" placeholder="e.g. Fatima Al-Rashidi" autocomplete="off"></div>
+   <div class="fg"><label>Student ID</label><input type="text" id="iID" placeholder="e.g. 20220001" autocomplete="off" oninput="checkID(this.value)"></div>
+   <div class="fg" id="groupFg"><label>Group</label>
+    <select id="iGroup">
+     <option value="">— Select your group —</option>
+     <option>Group A</option><option>Group B</option><option>Group C</option><option>Group D</option><option>Group E</option>
+     <option>Group F</option><option>Group G</option><option>Group H</option><option>Group I</option><option>Group J</option>
+    </select>
+   </div>
+   <div class="id-locked-note" id="idLocked">✓ Your Student ID is already registered. You will enter <strong id="lockedGrp"></strong> automatically.</div>
+  </div>
+  <div id="instrFields" style="display:none">
+   <div class="fg"><label>Your Name</label><input type="text" id="iInstrName" placeholder="Dr. Fekri Dureab" autocomplete="off"></div>
+   <div class="fg"><label>Instructor Password</label><input type="password" id="iPW" placeholder="Enter password" autocomplete="off"></div>
+  </div>
+  <div class="lerr" id="lerr"></div>
+  <button class="lbtn" onclick="doLogin()">Enter Simulation</button>
+  <p class="lnote" id="lnote">Your Student ID is permanently linked to your group. Contact your instructor if you need to change groups.</p>
+ </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainView">
+ <div class="hdr">
+  <div>
+   <div class="hdr-t">HealthRisk Sim <span id="iBadge" class="ibadge">INSTRUCTOR</span></div>
+   <div class="hdr-s">HCMT3006 · UDST College of Business</div>
+  </div>
+  <div class="hdr-r">
+   <span class="casebadge">Case 3 — Strategic Risk</span>
+   <span class="rbadge" id="hRound">Round 1</span>
+   <span class="hdr-u" id="hUser"></span>
+  </div>
+ </div>
+ <div class="nav">
+  <button class="nt on" onclick="showPg('pgSc',this)">Scenario</button>
+  <button class="nt" onclick="showPg('pgDec',this)" id="ntDec">My Decisions</button>
+  <button class="nt" onclick="showPg('pgGrp',this)" id="ntGrp">Group Dashboard</button>
+  <button class="nt" onclick="showPg('pgRR',this)">Risk Register</button>
+  <button class="nt" onclick="showPg('pgLB',this)">Leaderboard</button>
+  <button class="nt" onclick="showPg('pgIn',this)" id="ntIn" style="display:none;color:#C8A951">Instructor Panel</button>
+ </div>
+
+ <!-- SCENARIO -->
+ <div id="pgSc" class="pg on">
+  <div class="sbox">
+   <h2>Case 3 — Reputation Under Fire: Service Failure Goes Viral</h2>
+   <div class="sdt">Al-Khair Hospital · Northern Qatar · January 2026 · ASHRM ERM — Strategic Risk Domain</div>
+   <p>Al-Khair Hospital serves a large expatriate worker population in northern Qatar. In 2024, the hospital launched a Digital Transformation strategy — a new appointment system (MyHMC 2.0) and kiosk-only registration in outpatient areas. The rollout was compressed from 18 months to 6 months to meet a Qatar National Vision 2030 reporting deadline. Staff training lasted just 2 days before go-live. No risk assessment was conducted before launch.</p>
+   <p>Three weeks after go-live, a video was posted on YouTube showing a 58-year-old Bangladeshi construction worker sitting on the floor outside the hospital, crying. He had no smartphone, no email address, and did not speak Arabic or English. He had waited 5 hours for diabetes medication — he had run out of insulin 2 days earlier.</p>
+   <p>The video reached 180,000 views in 48 hours. Major Qatari news channels shared it. Arabic and English Twitter hashtags called for MoPH accountability. Advocacy groups submitted formal complaints. The CEO stated: <em>"This was a technology failure, not a leadership failure"</em> — media quoted this immediately.</p>
+   <div class="facts">
+    <div class="fact"><div class="fn r">180K</div><div class="fl">Video views 48hrs</div></div>
+    <div class="fact"><div class="fn r">23%</div><div class="fl">Outpatient drop</div></div>
+    <div class="fact"><div class="fn r">QAR 3.4M</div><div class="fl">Revenue loss Month 1</div></div>
+    <div class="fact"><div class="fn a">89%</div><div class="fl">Staff "not ready"</div></div>
+    <div class="fact"><div class="fn a">62%</div><div class="fl">Non-digital patients</div></div>
+    <div class="fact"><div class="fn g">6 mths</div><div class="fl">Compressed from 18</div></div>
+   </div>
+  </div>
+  <div class="asb"><strong>ASHRM Resource:</strong> ASHRM (2020) Strategic Risk in Health Care Organisations · ISO 31000:2018 §6.2 · QNV 2030 Human & Social Development Pillars. <a href="https://www.ashrm.org/resources" target="_blank" style="color:#185FA5">ashrm.org/resources</a></div>
+  <div style="margin-top:14px"><button class="btn btn-c" onclick="showPg('pgDec',document.getElementById('ntDec'))">Start Round 1 decisions &rarr;</button></div>
+ </div>
+
+ <!-- DECISIONS -->
+ <div id="pgDec" class="pg"><div id="decDiv"></div></div>
+
+ <!-- GROUP DASHBOARD -->
+ <div id="pgGrp" class="pg">
+  <div class="pbar"><div class="dot dr" id="pdot"></div><span id="ptxt">Waiting for members to submit...</span></div>
+  <div class="stit">Group members — individual answers</div>
+  <div class="mgrid" id="mGrid"></div>
+  <div class="card">
+   <div class="ch"><h3>Answer distribution — Question <span id="dqn">1</span></h3>
+    <div><button class="btn btn-o" onclick="pQ()" style="padding:4px 8px;font-size:11px;margin-right:4px">&lsaquo;</button><button class="btn btn-o" onclick="nQ()" style="padding:4px 8px;font-size:11px">&rsaquo;</button></div>
+   </div>
+   <div class="cb" id="distDiv"></div>
+  </div>
+  <div class="card">
+   <div class="ch"><h3>Group decision submission</h3><span style="font-size:10px;background:#FFF3CD;color:#854F0B;padding:2px 7px;border-radius:4px;font-weight:700">Leader &amp; Instructor only</span></div>
+   <div class="cb" id="gdDiv"></div>
+  </div>
+  <div id="scDiv"></div>
+ </div>
+
+ <!-- RISK REGISTER -->
+ <div id="pgRR" class="pg">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap;gap:8px">
+   <div class="stit" style="margin:0">Risk Register — <span id="rrGrp"></span></div>
+   <div style="display:flex;gap:7px;flex-wrap:wrap">
+    <button class="btn btn-o" onclick="addRow()" style="font-size:12px;padding:7px 11px">+ Add risk</button>
+    <button class="btn btn-c" onclick="saveRR()" style="font-size:12px;padding:7px 11px" id="saveBtn">Save register</button>
+   </div>
+  </div>
+  <div class="warn"><strong>Your task:</strong> Identify the Strategic, Operational, Financial, Legal/Regulatory, and Human Capital risks from Case 3. Add each risk below. The yellow row is an EXAMPLE only. Click <strong>Edit</strong> on rows you add to fill in the details.</div>
+  <div class="met" id="rrMet"></div>
+  <div class="rr-wrap"><table class="rrt">
+   <thead><tr><th>ID</th><th>Domain</th><th>Risk Name</th><th>L(1-5)</th><th>C(1-5)</th><th>RPN</th><th>Level</th><th>Mitigation Action</th><th>Res.L</th><th>Res.C</th><th>Residual</th><th>Status</th><th>Owner</th><th>Action</th></tr></thead>
+   <tbody id="rrBody"></tbody>
+  </table></div>
+  <div class="asb" style="margin-top:11px"><strong>ASHRM ERM Domains:</strong> Strategic · Operational · Financial · Legal/Regulatory · Human Capital &nbsp;|&nbsp; <strong>L×C=RPN:</strong> 15–25 EXTREME · 10–14 HIGH · 5–9 MEDIUM · 1–4 LOW</div>
+ </div>
+
+ <!-- LEADERBOARD -->
+ <div id="pgLB" class="pg">
+  <div class="stit">Leaderboard — Round <span id="lbR">1</span></div>
+  <div class="met" id="lbMet"></div>
+  <div id="lbDiv"></div>
+  <div class="tip"><strong>Scoring:</strong> Best decision +10 · Good +7 · Acceptable +4 · Wrong 0 · Harmful −5 · Risk Register quality bonus up to +10 pts per round</div>
+ </div>
+
+ <!-- INSTRUCTOR PANEL -->
+ <div id="pgIn" class="pg">
+  <div class="warn"><strong>Instructor view only.</strong> Students cannot see this panel.</div>
+  <div class="ip">
+   <h3>Round Control — Unlock rounds for students</h3>
+   <div style="font-size:13px;margin-bottom:9px">Currently open: <strong id="iRnd">Round 1</strong> &nbsp;·&nbsp; Students cannot proceed until you open the next round.</div>
+   <div class="rbtns">
+    <button class="btn btn-p" onclick="openRound(1)" style="font-size:12px">Open Round 1</button>
+    <button class="btn btn-o" onclick="openRound(2)" style="font-size:12px">Open Round 2</button>
+    <button class="btn btn-o" onclick="openRound(3)" style="font-size:12px">Open Round 3</button>
+    <button class="btn btn-o" onclick="openRound(4)" style="font-size:12px">Open Round 4</button>
+    <button class="btn btn-o" onclick="openRound(5)" style="font-size:12px">Open Round 5</button>
+   </div>
+  </div>
+  <div class="ip">
+   <h3>Student &amp; Group Management</h3>
+   <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn btn-r" onclick="deleteAll()" style="font-size:12px">⚠ Reset ALL data</button>
+    <button class="btn btn-o" onclick="renderIn()" style="font-size:12px">Refresh</button>
+   </div>
+   <div id="adminGroups"></div>
+  </div>
+  <div class="ip">
+   <h3>All groups — submissions &amp; decisions (Round <span id="iRndD">1</span>)</h3>
+   <div id="iGroups"></div>
+  </div>
+  <div class="ip">
+   <h3>Answer key — Round <span id="iAKR">1</span> (Instructor only)</h3>
+   <div id="iAK"></div>
+  </div>
+ </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────
+var PW='UDST2026';
+var ROLE='student';
+var user={name:'',id:'',group:'',role:''};
+var curRound=1;
+var myAns={};
+var myRef={r1:'',r2:''}; // reflection answers
+var submitted=false;
+var rrRows=[];
+var editIdx=null;
+var viewQ=1;
+var gdRendered=false;
+var ALL_GROUPS=['Group A','Group B','Group C','Group D','Group E','Group F','Group G','Group H','Group I','Group J'];
+
+// ── QUESTIONS (correct answers varied — NOT always A) ──────────
+// Answers are shuffled per question so correct is B, C, D sometimes
+var RD={
+ 1:{
+  title:"Round 1 — Risk Identification",
+  ashrm:"ASHRM ERM — Strategic Domain",
+  situation:"Date: 48 hours after the video goes viral. Your team is the Risk Management Committee at Al-Khair Hospital. The CEO is in an emergency meeting. The video has been shared by Al-Jazeera and Qatar Living. Your inbox has 12 formal complaint emails. MoPH has called for a meeting tomorrow. The outpatient department is still kiosk-only — the same configuration that caused the crisis.",
+  qs:[
+   {q:"What is your IMMEDIATE risk classification of this event using the ASHRM ERM 8-domain framework?",bloom:"Apply",
+    o:{A:"Technology Risk only — the kiosk system failed, so this is an IT problem.",
+       B:"Primary: Strategic Risk (reputation and mission failure). Secondary: Operational Risk (kiosk-only process failure), Financial Risk (23% revenue drop), Legal/Regulatory Risk (QNV2030 equity obligation, MoPH complaint), Human Capital Risk (staff readiness gap). All domains must be registered immediately.",
+       C:"Operational Risk only — the registration process failed on the ground.",
+       D:"Reputational Risk only — the YouTube video is the problem, not the underlying service failure."},
+    p:{A:0,B:10,C:4,D:0},a:'B'},
+   {q:"What is the SINGLE MOST IMPORTANT immediate action? The kiosk-only system is still operating and patients cannot access care today.",bloom:"Apply",
+    o:{A:"Issue a press statement immediately — managing the media narrative is the most important action.",
+       B:"Call an internal meeting to discuss the CEO's statement — leadership messaging must be aligned first.",
+       C:"Commission an independent investigation — no action should be taken until the review is complete.",
+       D:"Immediately restore manual and telephone registration alongside the kiosk system — today. Assign bilingual patient navigators at the outpatient entrance. This is an active patient access failure that may harm patients."},
+    p:{A:4,B:0,C:-5,D:10},a:'D'},
+   {q:"What pre-launch risk assessment SHOULD have been conducted before the digital transformation?",bloom:"Evaluate",
+    o:{A:"A formal SWOT + Stakeholder Risk Analysis identifying: population digital literacy gap (62% non-digital users), staff readiness gap (89% not ready), single-channel risk (no backup if kiosk fails), QNV2030 equity obligation, and a phased 3-month pilot before full rollout.",
+       B:"A financial feasibility study — the cost of the kiosks compared to the expected revenue benefit.",
+       C:"A technology risk assessment of the kiosk software — focused on system uptime and reliability.",
+       D:"A patient satisfaction survey after go-live — you cannot assess risk before you know how patients respond."},
+    p:{A:10,B:4,C:4,D:-5},a:'A'},
+   {q:"Which Qatar National Vision 2030 pillars were violated by this initiative?",bloom:"Understand",
+    o:{A:"Economic Development only — the 23% revenue drop is an economic harm.",
+       B:"Environmental Development — the paper-free initiative was supposed to reduce environmental impact.",
+       C:"No QNV2030 pillar was violated — digital transformation is consistent with modernisation goals.",
+       D:"Human Development (access to quality healthcare for ALL residents) AND Social Development (equity, social cohesion, and protecting vulnerable populations). The kiosk-only system directly contradicts QNV2030 equity and access commitments."},
+    p:{A:4,B:0,C:-5,D:10},a:'D'},
+   {q:"What risks do you add to the Risk Register RIGHT NOW?",bloom:"Create",
+    o:{A:"Add one entry: 'Digital Transformation Risk — HIGH'. Review at next quarterly risk meeting.",
+       B:"(1) Digital Access Exclusion Risk — Strategic/Operational, EXTREME. (2) Reputational Risk from Social Media Crisis — Strategic, HIGH. (3) MoPH Regulatory Risk from NV2030 equity violation — Legal, HIGH. (4) Financial Risk from attendance collapse — Financial, HIGH — QAR 3.4M impact.",
+       C:"Do not update the risk register yet — wait until the investigation findings are complete.",
+       D:"Add only Reputational Risk — the other risks will resolve once the PR crisis is managed."},
+    p:{A:4,B:10,C:-5,D:0},a:'B'},
+  ]},
+ 2:{
+  title:"Round 2 — Risk Assessment",
+  ashrm:"ASHRM ERM — Strategic + Financial Domains",
+  situation:"Date: Day 4 after the video. MoPH has met with the CEO. Manual registration has been restored (slow rollout — only 2 of 5 desks operating). Three more videos posted to social media — different patients, same kiosk issue. Formal complaint submitted by Bangladesh Workers' Association Qatar. The CEO's 'technology failure, not leadership failure' quote is still circulating. Outpatient attendance has dropped 27% compared to pre-crisis baseline. A Board meeting has been called for Day 7.",
+  qs:[
+   {q:"Apply the 5×5 Risk Matrix: What is the risk level for 'Digital Access Exclusion — Patient Harm'?",bloom:"Evaluate",
+    o:{A:"Likelihood 5 (Almost Certain — 62% of patients are affected), Consequence 5 (Critical — patients unable to access medications or urgent care face potential death). Risk Level: EXTREME. Immediate mitigation required.",
+       B:"Likelihood 3 (Possible), Consequence 3 (Moderate). Risk Level: HIGH. Requires senior management attention.",
+       C:"Likelihood 2 (Unlikely), Consequence 4 (Major). Risk Level: HIGH. The patient in the video was an extreme case.",
+       D:"Likelihood 4 (Likely), Consequence 2 (Minor). Risk Level: MEDIUM. The kiosk issue is temporary."},
+    p:{A:10,B:4,C:4,D:0},a:'A'},
+   {q:"How do you score the reputational risk in FINANCIAL terms for the Board?",bloom:"Evaluate",
+    o:{A:"QAR 3.4 million only — report the confirmed loss, not projections.",
+       B:"Current impact: QAR 3.4M (Month 1). Projected 6-month impact: QAR 20M. Add: regulatory fine risk (MoPH complaint), legal risk (3 formal complaints), contract risk (HMC contract review). Total risk exposure: QAR 25–30M. Probability: HIGH. Risk Level: EXTREME.",
+       C:"The financial impact is not a risk management issue — refer to Finance Department.",
+       D:"Reputational risk cannot be quantified financially — it is intangible."},
+    p:{A:4,B:10,C:0,D:-5},a:'B'},
+   {q:"Did the absence of a pre-launch risk assessment INCREASE the risk rating? How do you document this?",bloom:"Analyse",
+    o:{A:"No — the absence of a risk assessment is an omission, not a risk in itself. Document it as a lesson learned.",
+       B:"The risk assessment absence is a Human Capital failure — the project team was not trained.",
+       C:"Document it as a process gap — add 'conduct risk assessment before digital projects' to the policy.",
+       D:"Yes. Inherent risk (before controls) = EXTREME across all 4 dimensions. Existing controls at launch: NONE (no risk assessment, no pilot, no manual backup). Residual risk = EXTREME. Root cause: no risk manager on the project team. This is a governance failure — not a technology failure."},
+    p:{A:4,B:4,C:4,D:10},a:'D'},
+   {q:"Apply the Four Pillars of Healthcare Ethics (Beauchamp & Childress): Which principles did the kiosk-only system violate?",bloom:"Evaluate",
+    o:{A:"All four pillars violated: Autonomy (no alternative to kiosk), Beneficence (system did not serve patients' health needs), Non-maleficence (diabetic patient came to harm), Justice (most vulnerable patients were most harmed). Justice is the primary violation — the system was structurally inequitable.",
+       B:"Only Non-maleficence — the hospital did not intend to harm the patient.",
+       C:"Only Justice — the inequity of the system is the main ethical issue.",
+       D:"No ethics pillars violated — digital transformation is a legitimate organisational decision."},
+    p:{A:10,B:4,C:7,D:-5},a:'A'},
+   {q:"What CRISIS COMMUNICATION risk do you assess from the CEO's quote: 'This was a technology failure, not a leadership failure'?",bloom:"Evaluate",
+    o:{A:"LOW risk: the CEO was technically correct — the kiosk technology failed.",
+       B:"No risk: the CEO's statement is an internal matter and should not be addressed publicly.",
+       C:"HIGH reputational risk: The CEO's statement signals absence of accountability and contradicts evidence (leadership compressed the timeline, eliminated backup options, skipped risk assessment). Requires a formal correction within 24 hours demonstrating leadership accountability.",
+       D:"MEDIUM risk: the quote is unfortunate but most people will not remember it after the crisis passes."},
+    p:{A:-5,B:-5,C:10,D:4},a:'C'},
+  ]},
+ 3:{
+  title:"Round 3 — Crisis Communication & Mitigation",
+  ashrm:"ASHRM ERM — Legal/Regulatory + Strategic Domains",
+  situation:"Date: Day 7. Board meeting today. MoPH has formally requested a corrective action plan within 14 days. Three advocacy groups have joined the formal complaint. A journalist from Al-Sharq newspaper has requested a formal interview with the CEO. Manual registration is fully restored — but queues are long. Only 4 patient navigators deployed (English and Arabic only). The CEO's statement has been screenshotted and shared 22,000 times.",
+  qs:[
+   {q:"Which Phase 1 social media statement (within 2 hours of the video going viral) is correct?",bloom:"Apply",
+    o:{A:"'The MyHMC 2.0 kiosk system has experienced technical difficulties. We apologise for any inconvenience and are working to resolve the issue. Please call our helpline.' — Communications Team.",
+       B:"'We are investigating the video circulating online. We take patient safety seriously and will release a statement after the investigation is complete.' — HMC.",
+       C:"'We are aware of a video showing a patient who was unable to access our services. This is not the experience we want for any patient. We are deeply sorry. We are restoring manual registration today and will ensure every person who comes to Al-Khair Hospital is helped. We will report our actions to the community.' — CEO.",
+       D:"'This video does not represent our normal service. We serve thousands of patients daily and are proud of our quality. We regret this isolated incident.' — CEO."},
+    p:{A:4,B:4,C:10,D:-5},a:'C'},
+   {q:"Draft the Phase 3 (Day 7) media briefing key message. What does the CEO say?",bloom:"Create",
+    o:{A:"'We made a mistake. We moved too fast and did not test whether our system worked for all our patients — particularly those without digital access. We have restored manual registration, deployed patient navigators, and begun a full equity review. We are engaging directly with MoPH and the communities we failed. Here is what we have changed and here is our timeline.' — CEO with specific action list.",
+       B:"'The technology has now been fixed. We thank patients for their patience and look forward to the full benefits of digital healthcare.' — CEO.",
+       C:"'We cannot comment further while the MoPH investigation is ongoing. Our lawyers advise us not to make any statements at this time.' — CEO.",
+       D:"'Isolated incidents happen in all healthcare systems. We are proud of our overall performance and one video should not define our hospital.' — CEO."},
+    p:{A:10,B:0,C:-5,D:-5},a:'A'},
+   {q:"What is your STAKEHOLDER COMMUNICATION MATRIX for this crisis?",bloom:"Create",
+    o:{A:"One press statement for everyone — same message across all channels.",
+       B:"Media only — manage the public narrative first, then deal with internal stakeholders.",
+       C:"No external communication — let the situation resolve organically and avoid media attention.",
+       D:"Patients/Community: Arabic + English video from CEO — action steps, helpline, navigator service. Staff: CEO town hall — 'you are not at fault, here is what we are changing'. Board: formal risk report with financial impact. MoPH: written corrective action plan with 14-day timeline. Media: one senior spokesperson only, Q&A prepared, no off-record comments."},
+    p:{A:4,B:0,C:-5,D:10},a:'D'},
+   {q:"What are the 5 required steps in a Pre-Launch Risk Checklist for future digital transformation? MoPH has asked for a corrective action plan that includes preventing recurrence.",bloom:"Create",
+    o:{A:"(1) Formal risk assessment — risk manager on project team from Day 1. (2) Population equity analysis — who uses this service and can they use the new system? (3) Pilot phase — 3-month pilot before system-wide rollout. (4) Backup system — manual alternative maintained for all digital services. (5) MoPH equity review — does this comply with QNV2030 equity obligations?",
+       B:"IT security testing + staff training completion rate + go-live date confirmation.",
+       C:"Financial ROI analysis + CEO approval + procurement compliance check.",
+       D:"Patient satisfaction survey after go-live + 3-month review meeting with project team."},
+    p:{A:10,B:4,C:4,D:0},a:'A'},
+   {q:"What FINANCIAL mitigation do you activate to manage the 27% outpatient attendance collapse?",bloom:"Apply",
+    o:{A:"Cut all non-essential expenditure to compensate for the revenue loss.",
+       B:"Short-term: activate emergency outreach programme — contact regular patients (diabetes, hypertension) directly by phone to reassure and rebook. Medium-term: community clinic partnership with PHCC for overflow. Report 6-month projection to Board. Activate insurance notification. KRI: weekly attendance tracking — target 100% recovery within 12 weeks.",
+       C:"Reduce staff costs — fewer patients means fewer staff needed temporarily.",
+       D:"Do nothing — attendance will return naturally when the media coverage stops."},
+    p:{A:4,B:10,C:-5,D:-5},a:'B'},
+  ]},
+ 4:{
+  title:"Round 4 — KRI Monitoring & Recovery Plan",
+  ashrm:"ASHRM ERM — Human Capital Domain",
+  situation:"Date: Day 21. Manual registration is fully operational. Patient navigators now cover 5 languages (Arabic, English, Bengali, Urdu, Tagalog). Outpatient attendance is recovering — now 15% below pre-crisis baseline (improved from 27%). MoPH has submitted the formal corrective action plan and acknowledged receipt. Three advocacy groups have met with the CEO — response was positive. The journalist interview was conducted — published a largely balanced article. Staff morale is very low — 89% say they 'felt embarrassed' by the crisis.",
+  qs:[
+   {q:"What 3 KRIs would have given EARLY WARNING of this crisis before the video went viral?",bloom:"Create",
+    o:{A:"Social media monitoring — alert when negative posts exceed a threshold.",
+       B:"Revenue tracking — alert when outpatient attendance drops more than 10%.",
+       C:"Patient satisfaction scores — quarterly survey would have shown declining satisfaction.",
+       D:"(1) Daily unassisted patient rate at kiosk — alert if >15% need staff help in first week. (2) Daily manual registration requests — alert if >10% of patients request manual option. (3) Patient complaint rate — alert if >5 kiosk-related complaints per day in first 2 weeks. All three were measurable but no one was monitoring them."},
+    p:{A:4,B:4,C:0,D:10},a:'D'},
+   {q:"What does your 12-week recovery KRI Dashboard show the Board?",bloom:"Create",
+    o:{A:"Dashboard: (1) Outpatient attendance vs. pre-crisis baseline — weekly, target 100% by Week 12. (2) Navigator service utilisation — daily, target 500 patients/week. (3) Social media sentiment — weekly, target >80% positive. (4) MoPH corrective action plan completion — milestone tracker. (5) Multilingual access rate — target 8 languages by Week 12.",
+       B:"Attendance numbers only — this is the clearest measure of recovery.",
+       C:"Social media metrics only — managing public perception is the priority.",
+       D:"No KRI dashboard yet — too early to track recovery at week 3."},
+    p:{A:10,B:4,C:4,D:0},a:'A'},
+   {q:"What governance change do you recommend to prevent a future 'no risk manager on project' situation?",bloom:"Evaluate",
+    o:{A:"Hire a second risk manager — the current one was too busy to join the project team.",
+       B:"Add a risk assessment to the project management template — make it optional for urgent projects.",
+       C:"Mandatory Risk Manager sign-off for ALL projects with budget >QAR 500,000 or affecting >500 patients. Risk assessment required before Board approval. New Board agenda item: 'Active Projects Risk Status'. CEO must confirm risk assessment completed before any press release about a new initiative. Policy approved within 30 days.",
+       D:"Require the IT department to conduct technology risk assessments before go-live."},
+    p:{A:4,B:4,C:10,D:4},a:'C'},
+   {q:"How do you address the 89% of staff who felt embarrassed by the crisis? Staff morale is a Human Capital Risk.",bloom:"Apply",
+    o:{A:"Staff recognition programme: (1) CEO personally thanks staff who worked through the crisis. (2) Staff forum: 'What can we learn and what should we change?' — action items from staff ideas implemented and credited. (3) Communication to staff: 'The failure was a leadership and planning failure — you did your best with what you were given.' (4) KRI: staff satisfaction score — target pre-crisis baseline within 6 months.",
+       B:"Email from CEO: 'I am proud of how you handled a difficult situation. Thank you.'",
+       C:"Counselling service made available for staff who are stressed.",
+       D:"Focus on external recovery first — staff morale will improve when attendance numbers recover."},
+    p:{A:10,B:4,C:4,D:0},a:'A'},
+   {q:"What is your Board Risk Report structure for this event?",bloom:"Create",
+    o:{A:"Full 30-page report of the incident — the Board needs all the details.",
+       B:"Verbal briefing from CEO — 'We had a crisis, we managed it, we are recovering.'",
+       C:"Email summary — 3 bullet points with links to media coverage.",
+       D:"1-page executive summary + 4-dimension risk matrix (patient safety/financial/legal/reputational) + KRI recovery dashboard + 3 Board governance decisions required: (1) Approve mandatory risk assessment policy. (2) Allocate budget for multilingual navigator programme. (3) Approve independent patient equity review of all digital services. Presented in person — 10 minutes + Q&A."},
+    p:{A:0,B:4,C:0,D:10},a:'D'},
+  ]},
+ 5:{
+  title:"Round 5 — Evaluation & Strategic Risk Governance",
+  ashrm:"ASHRM ERM Self-Assessment — All Domains",
+  situation:"Date: Week 12. Outpatient attendance has recovered to 97% of pre-crisis baseline. MoPH has formally closed the corrective action plan. All 5 advocacy groups have been engaged — two have joined a patient advisory group. MyHMC 2.0 is now running alongside manual registration. The risk manager has been invited to present to the HMC network-wide Risk Directors as a case study in crisis recovery. The new mandatory risk assessment policy has been approved by the Board.",
+  qs:[
+   {q:"What are the THREE deepest root causes of this crisis using RCA/5 Whys?",bloom:"Evaluate",
+    o:{A:"Technology failure — the kiosk software was not robust enough.",
+       B:"(1) Strategic planning failure — no risk manager on the project team and no pre-launch risk assessment. (2) Equity blind spot — patient population analysis was not conducted before designing a digital-only system. (3) Governance failure — Board approved the initiative without requiring a risk assessment, and the timeline was compressed without safety review. All three are preventable with the new governance policy.",
+       C:"Staff training failure — 2 days of training was not enough.",
+       D:"Communication failure — the CEO's statement made the crisis worse."},
+    p:{A:4,B:10,C:4,D:4},a:'B'},
+   {q:"How does this case demonstrate the link between Strategic Risk and Qatar National Vision 2030?",bloom:"Analyse",
+    o:{A:"QNV2030 is a government responsibility — hospitals are not obligated to align with it.",
+       B:"QNV2030 applies to national strategy, not individual hospital operational decisions.",
+       C:"Healthcare providers in Qatar have a QNV2030 obligation to provide equitable access for ALL residents — including non-Arabic speakers, low-income workers, and those without digital access. Any strategic initiative must be assessed against this obligation BEFORE implementation. ASHRM Strategic Risk Framework requires that mission alignment be part of every strategic risk assessment.",
+       D:"The connection is only reputational — hospitals that align with QNV2030 are viewed more positively."},
+    p:{A:-5,B:0,C:10,D:4},a:'C'},
+   {q:"What is your 30/60/90-day strategic risk governance roadmap? MoPH and the Board both expect a structured plan.",bloom:"Create",
+    o:{A:"30 days: Mandatory risk assessment policy live. Risk manager appointed to all active projects. Patient equity review complete. 60 days: Navigator programme expanded to 8 languages. Board receives first strategic risk dashboard. Staff recognition programme complete. 90 days: Independent external review submitted to MoPH. HMC network-wide strategic risk protocol shared. ASHRM case study submission prepared.",
+       B:"90 days: complete investigation + submit to MoPH. No structured milestones needed.",
+       C:"30 days: hire another navigator. 60 days: improve the kiosk. 90 days: review attendance.",
+       D:"Wait until the next annual risk review cycle — strategic risks are reviewed annually."},
+    p:{A:10,B:4,C:0,D:-5},a:'A'},
+   {q:"What 3 KRIs make the best LEADING INDICATORS for strategic risk in future digital projects?",bloom:"Create",
+    o:{A:"Social media sentiment — monitor Twitter for negative mentions after go-live.",
+       B:"Patient satisfaction score — quarterly survey.",
+       C:"Revenue — monthly tracking against budget.",
+       D:"(1) Pre-launch equity audit score — % of target population who can use the new system without assistance. Alert if <90%. (2) Staff readiness score — % who rate themselves 'fully ready' before go-live. Alert if <80%. (3) Backup system availability — binary (yes/no) — alert if manual alternative not maintained. All three are measurable BEFORE launch."},
+    p:{A:4,B:4,C:4,D:10},a:'D'},
+   {q:"What is your final STRATEGIC RISK lesson for the ASHRM network case study presentation?",bloom:"Evaluate",
+    o:{A:"'Digital transformation is risky. Hospitals should move slowly and avoid new technology.'",
+       B:"'Crisis communication is the most important risk management skill. If we had handled the media better, the crisis would have been minor.'",
+       C:"'The lesson is that the CEO should have chosen different words. One bad statement caused the crisis to escalate.'",
+       D:"'Strategic initiatives carry risk. Risk managers must have a seat at the strategy table — not just the incident review table. In this case, no risk assessment was conducted before a major change affecting 85,000 patients. The result was a QAR 25 million exposure and a crisis taking 3 months to recover from. Risk assessment is not a compliance exercise — it is a leadership responsibility that begins at the planning stage, not the crisis stage.'"},
+    p:{A:-5,B:4,C:4,D:10},a:'D'},
+  ]},
+};
+
+var EXROW={id:'SR-EX',domain:'Strategic',name:'EXAMPLE: Digital Access Exclusion Risk — kiosk-only system excluded 62% non-digital patients. Click Edit to see how columns work.',L:5,C:5,mit:'Restore manual + phone registration immediately. Assign multilingual navigators. Conduct equity analysis before further digital rollout.',RL:2,RC:3,status:'In Progress',owner:'Risk Manager + CEO',isEx:true};
+
+// ── STORAGE (prefix c3_ to avoid collision with Case 1) ────────
+function sl(k,v){try{localStorage.setItem('c3_'+k,JSON.stringify(v));}catch(e){}}
+function gl(k,d){try{var v=localStorage.getItem('c3_'+k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function gk(){return user.group+'_r'+curRound;}
+function getReg(){return gl('registry',{});}
+function saveReg(r){sl('registry',r);}
+
+// ── ID CHECK ON INPUT ──────────────────────────────────────────
+function checkID(id){
+ id=(id||'').trim();
+ if(!id){document.getElementById('idLocked').style.display='none';document.getElementById('groupFg').style.display='block';return;}
+ var reg=getReg();
+ if(reg[id]){
+  document.getElementById('lockedGrp').textContent=reg[id].group;
+  document.getElementById('idLocked').style.display='block';
+  document.getElementById('groupFg').style.display='none';
+ } else {
+  document.getElementById('idLocked').style.display='none';
+  document.getElementById('groupFg').style.display='block';
+ }
+}
+
+// ── ROLE TABS ──────────────────────────────────────────────────
+function setRole(r){
+ ROLE=r;
+ ['S','L','I'].forEach(function(x){document.getElementById('tab'+x).classList.remove('on');});
+ var m={student:'S',leader:'L',instructor:'I'};
+ document.getElementById('tab'+m[r]).classList.add('on');
+ var isI=(r==='instructor');
+ document.getElementById('stdFields').style.display=isI?'none':'block';
+ document.getElementById('instrFields').style.display=isI?'block':'none';
+ document.getElementById('lnote').style.display=isI?'none':'block';
+ document.getElementById('lerr').style.display='none';
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────
+function doLogin(){
+ var err=document.getElementById('lerr');
+ err.style.display='none';
+ if(ROLE==='instructor'){
+  var pw=(document.getElementById('iPW').value||'').trim();
+  if(pw!==PW){err.textContent='Incorrect password. Please try again.';err.style.display='block';return;}
+  var n=(document.getElementById('iInstrName').value||'').trim()||'Instructor';
+  user={name:n,id:'instructor',group:'INSTRUCTOR',role:'instructor'};
+  launch();return;
+ }
+ var n=(document.getElementById('iName').value||'').trim();
+ var id=(document.getElementById('iID').value||'').trim();
+ var g=document.getElementById('iGroup').value;
+ if(!n){alert('Please enter your full name.');return;}
+ if(!id){alert('Please enter your student ID.');return;}
+ var reg=getReg();
+ if(reg[id]){
+  g=reg[id].group;
+ } else {
+  if(!g){alert('Please select your group.');return;}
+  reg[id]={name:n,group:g,role:ROLE,at:new Date().toISOString()};
+  saveReg(reg);
+ }
+ user={name:n,id:id,group:g,role:ROLE};
+ sl('u_'+id,user);
+ launch();
+}
+
+function launch(){
+ curRound=gl('cur_round',1);
+ submitted=gl('sub_'+user.id+'_r'+curRound,false);
+ myAns=gl('ans_'+user.id+'_r'+curRound,{});
+ myRef=gl('ref_'+user.id+'_r'+curRound,{r1:'',r2:''});
+ rrRows=gl('rr_'+user.group,[JSON.parse(JSON.stringify(EXROW))]);
+ document.getElementById('loginView').style.display='none';
+ document.getElementById('mainView').style.display='block';
+ document.getElementById('hUser').textContent=user.name+(user.role==='instructor'?'':' · '+user.group);
+ document.getElementById('hRound').textContent='Round '+curRound;
+ if(user.role==='instructor'){
+  document.getElementById('iBadge').style.display='inline-block';
+  document.getElementById('ntIn').style.display='block';
+  document.getElementById('ntDec').style.display='none';
+  renderIn();
+ } else {
+  document.getElementById('rrGrp').textContent=user.group;
+  renderDec();renderGrpPartial();renderGDOnce();renderRR();renderLB();
+  setInterval(function(){renderGrpPartial();renderSc();renderLB();},4000);
+ }
+}
+
+// ── NAV ────────────────────────────────────────────────────────
+function showPg(id,btn){
+ document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+ document.querySelectorAll('.nt').forEach(function(t){t.classList.remove('on');});
+ document.getElementById(id).classList.add('on');
+ if(btn)btn.classList.add('on');
+ if(id==='pgGrp'){renderGrpPartial();renderSc();}
+ if(id==='pgLB')renderLB();
+ if(id==='pgRR')renderRR();
+ if(id==='pgIn')renderIn();
+}
+
+// ── DECISIONS ──────────────────────────────────────────────────
+function renderDec(){
+ var el=document.getElementById('decDiv');
+ var r=RD[curRound];
+ // Check if instructor has unlocked this round
+ var openRnd=gl('cur_round',1);
+ if(curRound>openRnd){
+  el.innerHTML='<div class="round-locked"><h3>⏳ Round '+curRound+' is not open yet</h3><p>Your instructor has not unlocked this round. Please wait for the instructor to open Round '+curRound+'.<br>Currently open: <strong>Round '+openRnd+'</strong></p></div>';
+  return;
+ }
+ if(!r){el.innerHTML='<div class="emp"><h4>Round not found</h4></div>';return;}
+ if(submitted){
+  var h='<div class="ok"><h3>✓ Your decisions are submitted for Round '+curRound+'!</h3><p>Go to the Group Dashboard to see your group\'s answers and start discussing. Wait for the instructor to open the next round.</p></div>';
+  h+='<div class="situation-box"><h4>Situation — '+r.title+'</h4><p>'+r.situation+'</p></div>';
+  h+='<div class="stit">Your submitted answers</div>';
+  r.qs.forEach(function(q,i){
+   var qn='q'+(i+1);var ans=myAns[qn]||'?';
+   h+='<div class="qcard"><div class="ql">Decision '+(i+1)+' — You chose: <strong>'+ans+'</strong></div><div class="qt">'+q.q+'</div><div style="font-size:12px;color:#002A5C;margin-top:4px">'+q.o[ans]+'</div></div>';
+  });
+  // Show reflection submitted
+  var ref=gl('ref_'+user.id+'_r'+curRound,{r1:'',r2:''});
+  if(ref.r1||ref.r2){
+   h+='<div class="reflection-box"><h4>Your Round Reflection</h4>';
+   if(ref.r1)h+='<div class="reflection-q"><label>What was the most difficult decision this round? Why?</label><div style="font-size:13px;color:#0A1628;padding:8px;background:#F4F6FA;border-radius:6px">'+ref.r1+'</div></div>';
+   if(ref.r2)h+='<div class="reflection-q"><label>Which ASHRM ERM domain did this round focus on? What tool did you apply?</label><div style="font-size:13px;color:#0A1628;padding:8px;background:#F4F6FA;border-radius:6px">'+ref.r2+'</div></div>';
+   h+='</div>';
+  }
+  el.innerHTML=h;return;
+ }
+ var h='<div class="situation-box"><h4>Situation Update — '+r.title+'</h4><p>'+r.situation+'</p></div>';
+ h+='<div class="stit">'+r.title+' &nbsp;<span style="font-size:11px;font-weight:400;color:#6B7A8D">'+r.ashrm+'</span></div>';
+ r.qs.forEach(function(q,i){
+  var qn='q'+(i+1);var sel=myAns[qn]||'';
+  h+='<div class="qcard"><div class="ql">DECISION '+(i+1)+' OF 5 &nbsp;·&nbsp; Bloom\'s: '+q.bloom+'</div><div class="qt">'+q.q+'</div>';
+  ['A','B','C','D'].forEach(function(l){
+   h+='<div class="opt'+(sel===l?' sel':'')+'" onclick="selA(\''+qn+'\',\''+l+'\')">';
+   h+='<div class="ol">'+l+'</div><div style="flex:1">'+q.o[l]+'</div></div>';
+  });
+  h+='</div>';
+ });
+ // REFLECTION SECTION — required before submit
+ h+='<div class="reflection-box"><h4>Round Reflection — Complete before submitting</h4>';
+ h+='<div class="reflection-q"><label>1. What was the most difficult decision this round? Why? (Write 2–3 sentences)</label>';
+ h+='<textarea id="ref1" placeholder="Describe which decision was most challenging and explain your reasoning..." onchange="saveRef()">'+((myRef&&myRef.r1)||'')+'</textarea></div>';
+ h+='<div class="reflection-q"><label>2. Which ASHRM ERM domain did this round focus on? What risk management tool did your group apply?</label>';
+ h+='<textarea id="ref2" placeholder="Name the ASHRM ERM domain (e.g. Strategic Risk) and the tool used (e.g. 5x5 Risk Matrix, SWOT, RCA, KRI Dashboard)..." onchange="saveRef()">'+((myRef&&myRef.r2)||'')+'</textarea></div></div>';
+ var done=r.qs.every(function(_,i){return myAns['q'+(i+1)];});
+ h+='<div style="margin-top:13px;display:flex;align-items:center;gap:11px;flex-wrap:wrap"><button class="btn btn-p" onclick="subDec()" '+(done?'':'disabled')+'>'+(done?'Submit decisions + reflection':'Answer all 5 questions to enable submit')+'</button>';
+ if(!done)h+='<span style="font-size:12px;color:#6B7A8D">'+Object.keys(myAns).length+' / 5 answered</span>';
+ h+='</div>';
+ el.innerHTML=h;
+}
+
+function saveRef(){
+ var r1=document.getElementById('ref1');var r2=document.getElementById('ref2');
+ myRef={r1:r1?r1.value:'',r2:r2?r2.value:''};
+ sl('ref_'+user.id+'_r'+curRound,myRef);
+}
+
+function selA(qn,l){
+ if(submitted)return;
+ myAns[qn]=l;
+ sl('ans_'+user.id+'_r'+curRound,myAns);
+ // update only that question's selection, preserve reflection text
+ var ref1=document.getElementById('ref1');var ref2=document.getElementById('ref2');
+ if(ref1)myRef.r1=ref1.value;
+ if(ref2)myRef.r2=ref2.value;
+ renderDec();
+}
+
+function subDec(){
+ var r=RD[curRound];
+ if(!r.qs.every(function(_,i){return myAns['q'+(i+1)];})){alert('Please answer all 5 questions.');return;}
+ saveRef();
+ var subs=gl('subs_'+gk(),[]);
+ var ex=-1;subs.forEach(function(s,i){if(s.id===user.id)ex=i;});
+ var e={id:user.id,name:user.name,group:user.group,round:curRound,answers:JSON.parse(JSON.stringify(myAns)),reflection:JSON.parse(JSON.stringify(myRef)),at:new Date().toISOString()};
+ if(ex>=0)subs[ex]=e;else subs.push(e);
+ sl('subs_'+gk(),subs);
+ submitted=true;sl('sub_'+user.id+'_r'+curRound,true);
+ renderDec();renderGrpPartial();renderLB();
+}
+
+// ── GROUP — partial only (never re-renders GD form) ─────────────
+function renderGrpPartial(){
+ var subs=gl('subs_'+gk(),[]);
+ var gd=gl('gd_'+gk(),null);
+ var r=RD[curRound];
+ var pd=document.getElementById('pdot');var pt=document.getElementById('ptxt');
+ if(!pd)return;
+ if(gd){pd.className='dot dg';pt.textContent='Group decision submitted! Check the Leaderboard.';}
+ else if(subs.length>0){pd.className='dot da';pt.textContent=subs.length+' member(s) submitted — discuss then submit the group decision below.';}
+ else{pd.className='dot dr';pt.textContent='Waiting for members to submit individual decisions...';}
+ var mg='';
+ if(subs.length===0){mg='<div class="emp" style="grid-column:1/-1"><h4>No submissions yet</h4><p>Members appear here as they submit their decisions.</p></div>';}
+ else{subs.forEach(function(s){
+  var ini=s.name.split(' ').map(function(w){return w[0]||'';}).join('').substring(0,2).toUpperCase();
+  mg+='<div class="mc"><div class="mn"><div class="av">'+ini+'</div>'+s.name+'</div>';
+  for(var i=1;i<=5;i++){var a=s.answers['q'+i]||'';mg+='<div class="mar"><span class="mq">Q'+i+'</span><span class="mv '+(a?'v'+a:'vn')+'">'+(a||'—')+'</span></div>';}
+  mg+='</div>';
+ });}
+ document.getElementById('mGrid').innerHTML=mg;
+ renderDist(subs,r);
+ if(gd){var sc=0;if(r)r.qs.forEach(function(q,i){sc+=(q.p[gd.answers['q'+(i+1)]]||0);});
+  document.getElementById('gdDiv').innerHTML='<div class="ok"><h3>Group decision submitted!</h3><p>Group score for Round '+curRound+': <strong>'+sc+' / 50 points</strong></p></div>';
+ }
+}
+
+function renderDist(subs,r){
+ var el=document.getElementById('distDiv');if(!el)return;
+ document.getElementById('dqn').textContent=viewQ;
+ if(!r||subs.length===0){el.innerHTML='<div class="emp" style="padding:12px 0"><p>No submissions yet</p></div>';return;}
+ var q=r.qs[viewQ-1];var ct={A:0,B:0,C:0,D:0};
+ subs.forEach(function(s){var a=s.answers['q'+viewQ];if(a)ct[a]++;});
+ var tot=subs.length;
+ var h='<div style="font-size:11px;color:#6B7A8D;margin-bottom:9px">'+q.q+'</div>';
+ ['A','B','C','D'].forEach(function(l){
+  var pct=tot>0?Math.round(ct[l]/tot*100):0;
+  h+='<div class="db"><div class="db-top"><span><strong>'+l+'</strong> <span style="color:#6B7A8D">'+ct[l]+' vote'+(ct[l]!==1?'s':'')+' ('+pct+'%)</span></span></div>'+
+   '<div style="height:8px;background:#F4F6FA;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:#378ADD;border-radius:4px"></div></div></div>';
+ });
+ el.innerHTML=h;
+}
+function pQ(){if(viewQ>1){viewQ--;renderGrpPartial();}}
+function nQ(){if(viewQ<5){viewQ++;renderGrpPartial();}}
+
+// GD form rendered ONCE — never overwritten by polling interval
+function renderGDOnce(){
+ var gd=gl('gd_'+gk(),null);var r=RD[curRound];var el=document.getElementById('gdDiv');if(!el)return;
+ if(gd){var sc=0;if(r)r.qs.forEach(function(q,i){sc+=(q.p[gd.answers['q'+(i+1)]]||0);});
+  el.innerHTML='<div class="ok"><h3>Group decision submitted!</h3><p>Group score: <strong>'+sc+' / 50 pts</strong></p></div>';gdRendered=false;return;}
+ if(user.role==='leader'||user.role==='instructor'){
+  var subs=gl('subs_'+gk(),[]);
+  if(subs.length===0){el.innerHTML='<div class="emp"><p>Wait for at least one member to submit their individual decisions first.</p></div>';gdRendered=false;return;}
+  var h='<p style="font-size:12px;color:#6B7A8D;margin-bottom:12px">After your group discussion, select the final agreed answer for each question. Your selection stays until you click Submit.</p>';
+  if(r){r.qs.forEach(function(q,i){
+   var nm='c3r'+curRound+'q'+(i+1);
+   h+='<div class="gdq"><div class="gdqt">Decision '+(i+1)+': '+q.q+'</div><div class="gdopts">';
+   ['A','B','C','D'].forEach(function(l){h+='<span class="gdo"><input type="radio" name="'+nm+'" id="'+nm+l+'" value="'+l+'"><label for="'+nm+l+'">'+l+'</label></span>';});
+   h+='</div></div>';
+  });}
+  h+='<button class="btn btn-c" onclick="subGD()" style="margin-top:8px;font-size:14px;padding:10px 22px">Submit group decision</button>';
+  el.innerHTML=h;gdRendered=true;
+ } else {
+  el.innerHTML='<div class="emp"><p>Only the Group Leader can submit the group decision after discussion.</p></div>';gdRendered=false;
+ }
+}
+
+function subGD(){
+ var r=RD[curRound];var ans={};var ok=true;
+ for(var i=1;i<=5;i++){var nm='c3r'+curRound+'q'+i;var s=document.querySelector('input[name="'+nm+'"]:checked');if(!s){ok=false;break;}ans['q'+i]=s.value;}
+ if(!ok){alert('Please select an answer for ALL 5 questions before submitting.');return;}
+ var sc=0;if(r)r.qs.forEach(function(q,i){sc+=(q.p[ans['q'+(i+1)]]||0);});
+ var gd={group:user.group,round:curRound,answers:ans,score:sc,at:new Date().toISOString()};
+ sl('gd_'+gk(),gd);
+ var all=gl('allGD',[]);var ex=-1;all.forEach(function(g,i){if(g.group===user.group&&g.round===curRound)ex=i;});
+ if(ex>=0)all[ex]=gd;else all.push(gd);sl('allGD',all);
+ gdRendered=false;renderGDOnce();renderSc();renderLB();
+}
+
+function renderSc(){
+ var b=document.getElementById('scDiv');if(!b)return;
+ var gd=gl('gd_'+gk(),null);var r=RD[curRound];var subs=gl('subs_'+gk(),[]);
+ if(!gd||!r){b.innerHTML='';return;}
+ var gsc=0;r.qs.forEach(function(q,i){gsc+=(q.p[gd.answers['q'+(i+1)]]||0);});
+ var h='<div class="score-box"><h3>Round '+curRound+' — Score Summary</h3>';
+ h+='<div class="srow"><span style="font-weight:700">Group Decision Total</span><span class="spts">'+gsc+' / 50</span></div>';
+ if(user.role==='instructor'||user.role==='leader'){
+  h+='<div style="margin-top:9px;font-size:11px;color:rgba(255,255,255,.55);margin-bottom:4px">Individual scores (leader &amp; instructor view):</div>';
+  subs.forEach(function(s){var isc=0;r.qs.forEach(function(q,i){isc+=(q.p[s.answers['q'+(i+1)]]||0);});
+   h+='<div class="srow"><span>'+s.name+'</span><span class="spts" style="font-size:16px">'+isc+'</span></div>';});
+ }h+='</div>';b.innerHTML=h;
+}
+
+// ── RISK REGISTER ──────────────────────────────────────────────
+function lv(n){return n>=15?'lx':n>=10?'lh':n>=5?'lm':'ll';}
+function lvl(n){return n>=15?'EXTREME':n>=10?'HIGH':n>=5?'MEDIUM':'LOW';}
+function dc(d){return d==='Strategic'?'dst':d==='Operational'?'dop':d==='Financial'?'dfi':d==='Legal/Regulatory'?'dlr':d==='Clinical'?'dcl':'dhc';}
+function sc2(s){return s==='Open'?'so':s==='In Progress'?'spr':'sdn';}
+
+function renderRR(){
+ var ext=rrRows.filter(function(r){return!r.isEx&&r.L*r.C>=15;}).length;
+ var op=rrRows.filter(function(r){return!r.isEx&&r.status==='Open';}).length;
+ var rd=rrRows.filter(function(r){return!r.isEx&&r.RL*r.RC<r.L*r.C;}).length;
+ var cnt=rrRows.filter(function(r){return!r.isEx;}).length;
+ document.getElementById('rrMet').innerHTML=
+  '<div class="mc2"><div class="mn2">'+cnt+'</div><div class="ml">Risks identified</div></div>'+
+  '<div class="mc2 mrd"><div class="mn2">'+ext+'</div><div class="ml">Extreme</div></div>'+
+  '<div class="mc2"><div class="mn2">'+op+'</div><div class="ml">Open</div></div>'+
+  '<div class="mc2 mgr"><div class="mn2">'+rd+'</div><div class="ml">Risk reduced</div></div>';
+ var DOMS=['Strategic','Operational','Financial','Legal/Regulatory','Human Capital','Clinical','Technology','Hazard'];
+ var STATS=['Open','In Progress','Closed'];
+ var h='';
+ rrRows.forEach(function(r,i){
+  var rpn=r.L*r.C;var res=r.RL*r.RC;
+  if(editIdx===i){
+   h+='<tr style="background:#EBF2FB"><td><input class="ri" value="'+r.id+'" onchange="re('+i+',\'id\',this.value)" style="width:50px"></td>'+
+    '<td><select class="ri" onchange="re('+i+',\'domain\',this.value)">'+DOMS.map(function(d){return'<option'+(d===r.domain?' selected':'')+'>'+d+'</option>';}).join('')+'</select></td>'+
+    '<td><input class="ri" value="'+r.name.replace(/"/g,'&quot;').substring(0,70)+'" onchange="re('+i+',\'name\',this.value)" style="min-width:130px"></td>'+
+    '<td><input class="ri" type="number" min="1" max="5" value="'+r.L+'" onchange="re('+i+',\'L\',+this.value)" style="width:38px"></td>'+
+    '<td><input class="ri" type="number" min="1" max="5" value="'+r.C+'" onchange="re('+i+',\'C\',+this.value)" style="width:38px"></td>'+
+    '<td><strong>'+rpn+'</strong></td><td><span class="'+lv(rpn)+'">'+lvl(rpn)+'</span></td>'+
+    '<td><input class="ri" value="'+r.mit.substring(0,100)+'" onchange="re('+i+',\'mit\',this.value)" style="min-width:150px"></td>'+
+    '<td><input class="ri" type="number" min="1" max="5" value="'+r.RL+'" onchange="re('+i+',\'RL\',+this.value)" style="width:38px"></td>'+
+    '<td><input class="ri" type="number" min="1" max="5" value="'+r.RC+'" onchange="re('+i+',\'RC\',+this.value)" style="width:38px"></td>'+
+    '<td><span class="'+lv(res)+'">'+lvl(res)+' '+res+'</span></td>'+
+    '<td><select class="ri" onchange="re('+i+',\'status\',this.value)">'+STATS.map(function(s){return'<option'+(s===r.status?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>'+
+    '<td><input class="ri" value="'+r.owner.substring(0,45)+'" onchange="re('+i+',\'owner\',this.value)" style="min-width:100px"></td>'+
+    '<td><button class="btn btn-c" onclick="sv('+i+')" style="font-size:11px;padding:4px 8px">Save</button></td></tr>';
+  } else {
+   h+='<tr'+(r.isEx?' class="ex-row"':'')+'>'+
+    '<td style="font-weight:700;color:#002A5C;font-size:10px;white-space:nowrap">'+r.id+'</td>'+
+    '<td><span class="'+dc(r.domain)+'">'+r.domain+'</span></td>'+
+    '<td style="font-weight:600;color:#002A5C;font-size:12px;max-width:180px">'+r.name+'</td>'+
+    '<td style="text-align:center">'+r.L+'</td><td style="text-align:center">'+r.C+'</td>'+
+    '<td style="text-align:center;font-weight:700">'+rpn+'</td><td><span class="'+lv(rpn)+'">'+lvl(rpn)+'</span></td>'+
+    '<td style="font-size:11px;color:#6B7A8D;max-width:200px">'+r.mit+'</td>'+
+    '<td style="text-align:center">'+r.RL+'</td><td style="text-align:center">'+r.RC+'</td>'+
+    '<td><span class="'+lv(res)+'">'+lvl(res)+' '+res+'</span></td>'+
+    '<td><span class="'+sc2(r.status)+'">'+r.status+'</span></td>'+
+    '<td style="font-size:11px;color:#6B7A8D">'+r.owner+'</td>'+
+    '<td>'+(r.isEx?'<span style="font-size:10px;color:#C8A951;font-weight:700">EXAMPLE</span>':
+    '<button class="btn btn-o" onclick="ed('+i+')" style="font-size:11px;padding:4px 8px">Edit</button> <button onclick="dl('+i+')" style="background:none;border:none;color:#C0392B;cursor:pointer;font-size:17px;font-weight:700;line-height:1;padding:0 3px">&#10005;</button>')+'</td></tr>';
+  }
+ });
+ document.getElementById('rrBody').innerHTML=h;
+}
+function re(i,f,v){rrRows[i][f]=v;}
+function ed(i){editIdx=i;renderRR();}
+function sv(i){editIdx=null;renderRR();}
+function addRow(){rrRows.push({id:'SR-'+(rrRows.length),domain:'Strategic',name:'Click Edit to name this risk',L:1,C:1,mit:'Define your mitigation action here',RL:1,RC:1,status:'Open',owner:'',isEx:false});editIdx=rrRows.length-1;renderRR();}
+function dl(i){if(confirm('Remove this risk from the register?')){rrRows.splice(i,1);if(editIdx===i)editIdx=null;renderRR();}}
+function saveRR(){
+ sl('rr_'+user.group,rrRows);
+ var all=gl('allRR',{});all[user.group]={group:user.group,rows:rrRows,at:new Date().toISOString()};sl('allRR',all);
+ var b=document.getElementById('saveBtn');b.textContent='Saved! ✓';setTimeout(function(){b.textContent='Save register';},2000);renderLB();
+}
+
+// ── LEADERBOARD ────────────────────────────────────────────────
+function renderLB(){
+ document.getElementById('lbR').textContent=curRound;
+ var allGD=gl('allGD',[]);var allRR=gl('allRR',{});
+ var sc={};ALL_GROUPS.forEach(function(g){sc[g]={dec:0,rr:0,tot:0,sub:false};});
+ allGD.forEach(function(gd){if(gd.round===curRound&&sc[gd.group]){sc[gd.group].dec=gd.score;sc[gd.group].sub=true;}});
+ Object.values(allRR).forEach(function(rr){if(sc[rr.group]){var b=rr.rows.filter(function(r){return!r.isEx&&r.mit&&r.mit.length>15;}).length*2;sc[rr.group].rr=Math.min(10,b);}});
+ Object.values(sc).forEach(function(s){s.tot=s.dec+s.rr;});
+ var sorted=Object.entries(sc).filter(function(e){return e[1].sub||e[1].rr>0;}).sort(function(a,b){return b[1].tot-a[1].tot;});
+ var max=sorted.length>0?sorted[0][1].tot:50;
+ document.getElementById('lbMet').innerHTML=
+  '<div class="mc2"><div class="mn2">'+sorted.length+'</div><div class="ml">Active groups</div></div>'+
+  '<div class="mc2 mam"><div class="mn2">'+curRound+'/5</div><div class="ml">Current round</div></div>'+
+  '<div class="mc2 mgr"><div class="mn2">'+(sorted.length>0?sorted[0][1].tot:0)+'</div><div class="ml">Top score</div></div>';
+ var lh='';
+ if(sorted.length===0){lh='<div class="emp"><h4>No group decisions submitted yet</h4><p>Groups appear here after the group leader submits the group decision.</p></div>';}
+ else{sorted.forEach(function(e,i){
+  var n=e[0];var s=e[1];var rc=i===0?'rk1':i===1?'rk2':i===2?'rk3':'';
+  var pct=max>0?Math.round(s.tot/max*100):0;
+  lh+='<div class="lbr"><div class="lrk '+rc+'">'+(i+1)+'</div>'+
+   '<div style="flex:1"><div class="lrn">'+n+'</div><div class="lrs">Decisions: '+s.dec+' pts &nbsp;·&nbsp; Register bonus: +'+s.rr+' pts</div></div>'+
+   '<div style="display:flex;align-items:center;gap:9px"><div class="lbb"><div class="lbf" style="width:'+pct+'%"></div></div><div class="lrt">'+s.tot+'</div></div></div>';
+ });}
+ document.getElementById('lbDiv').innerHTML=lh;
+}
+
+// ── INSTRUCTOR ─────────────────────────────────────────────────
+function openRound(n){
+ sl('cur_round',n);curRound=n;
+ document.getElementById('hRound').textContent='Round '+n;
+ document.getElementById('iRnd').textContent='Round '+n;
+ document.getElementById('iRndD').textContent=n;
+ document.getElementById('iAKR').textContent=n;
+ gdRendered=false;renderIn();renderLB();
+ alert('Round '+n+' is now open. Students can now access Round '+n+' decisions.');
+}
+
+function deleteStudent(sid,grp){
+ if(!confirm('Remove student ID '+sid+' from '+grp+'?\n\nThey will be able to re-register in a different group.')){return;}
+ var reg=getReg();delete reg[sid];saveReg(reg);
+ for(var r=1;r<=5;r++){
+  var k='subs_'+grp+'_r'+r;var subs=gl(k,[]);
+  sl(k,subs.filter(function(s){return s.id!==sid;}));
+  try{localStorage.removeItem('c3_sub_'+sid+'_r'+r);localStorage.removeItem('c3_ans_'+sid+'_r'+r);localStorage.removeItem('c3_ref_'+sid+'_r'+r);}catch(e){}
+ }
+ renderIn();
+}
+
+function deleteGroup(grp){
+ if(!confirm('DELETE entire '+grp+'?\n\nThis removes ALL students, submissions, group decisions, and risk register data for this group. This cannot be undone.')){return;}
+ var reg=getReg();Object.keys(reg).forEach(function(id){if(reg[id].group===grp)delete reg[id];});saveReg(reg);
+ for(var r=1;r<=5;r++){
+  try{localStorage.removeItem('c3_subs_'+grp+'_r'+r);localStorage.removeItem('c3_gd_'+grp+'_r'+r);}catch(e){}
+ }
+ try{localStorage.removeItem('c3_rr_'+grp);}catch(e){}
+ var all=gl('allGD',[]);sl('allGD',all.filter(function(g){return g.group!==grp;}));
+ var allRR=gl('allRR',{});delete allRR[grp];sl('allRR',allRR);
+ renderIn();renderLB();
+}
+
+function deleteAll(){
+ if(!confirm('RESET ALL DATA for Case 3?\n\nThis permanently deletes every student, submission, group decision, and risk register. This cannot be undone.')){return;}
+ if(!confirm('FINAL CONFIRMATION: All Case 3 simulation data will be permanently deleted. Continue?')){return;}
+ var keys=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.startsWith('c3_'))keys.push(k);}
+ keys.forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});
+ alert('All Case 3 data has been reset successfully.');renderIn();renderLB();
+}
+
+function renderIn(){
+ var r=RD[curRound];
+ var reg=getReg();
+ var openRnd=gl('cur_round',1);
+ // Admin group management
+ var adminHtml='';
+ ALL_GROUPS.forEach(function(g){
+  var inGroup=Object.entries(reg).filter(function(e){return e[1].group===g;});
+  var subs=gl('subs_'+g+'_r'+curRound,[]);
+  adminHtml+='<div class="group-admin-card"><div class="group-admin-title"><h4>'+g+' — '+inGroup.length+' student(s) registered</h4>';
+  adminHtml+='<button class="btn btn-r" onclick="deleteGroup(\''+g+'\')" style="font-size:11px;padding:4px 10px">Delete group</button></div>';
+  if(inGroup.length===0){adminHtml+='<div style="font-size:12px;color:#6B7A8D;font-style:italic;padding:4px 0">No students registered yet.</div>';}
+  else{inGroup.forEach(function(e){
+   var sid=e[0];var si=e[1];
+   var hasSub=subs.some(function(s){return s.id===sid;});
+   adminHtml+='<div class="student-row">'+
+    '<div class="av" style="flex-shrink:0">'+si.name.substring(0,2).toUpperCase()+'</div>'+
+    '<div style="flex:1"><strong>'+si.name+'</strong> <span style="color:#6B7A8D;font-size:11px">(ID: '+sid+')</span> <span style="font-size:10px;color:#6B7A8D">'+si.role+'</span></div>'+
+    '<span style="font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;background:'+(hasSub?'#E1F5EE':'#FFF3CD')+';color:'+(hasSub?'#1A7A4A':'#854F0B')+'">'+
+    (hasSub?'Submitted R'+curRound:'Not submitted')+'</span>'+
+    ' <button class="del-btn" onclick="deleteStudent(\''+sid+'\',\''+g+'\')" title="Remove student">Remove</button></div>';
+  });}
+  adminHtml+='</div>';
+ });
+ document.getElementById('adminGroups').innerHTML=adminHtml;
+
+ // Submissions view
+ var iHtml='';
+ ALL_GROUPS.forEach(function(g){
+  var subs=gl('subs_'+g+'_r'+curRound,[]);
+  var gd=gl('gd_'+g+'_r'+curRound,null);
+  var rrData=gl('allRR',{})[g];
+  if(subs.length===0&&!gd&&!rrData)return;
+  var gsc=0;if(gd&&r)r.qs.forEach(function(q,i){gsc+=(q.p[gd.answers['q'+(i+1)]]||0);});
+  iHtml+='<div class="igc"><div class="igt"><span>'+g+'</span>';
+  if(gd)iHtml+='<span style="font-size:12px;background:#E1F5EE;color:#1A7A4A;padding:2px 8px;border-radius:4px;font-weight:700">Group: '+gsc+'/50 pts</span>';
+  iHtml+='</div>';
+  if(subs.length>0){
+   iHtml+='<div style="font-size:10px;font-weight:700;color:#6B7A8D;margin-bottom:5px;text-transform:uppercase">Individual submissions ('+subs.length+')</div>';
+   subs.forEach(function(s){
+    var isc=0;if(r)r.qs.forEach(function(q,i){isc+=(q.p[s.answers['q'+(i+1)]]||0);});
+    iHtml+='<div class="imr"><span style="flex:1;font-weight:700">'+s.name+'</span><div class="ians">';
+    for(var i=1;i<=5;i++){var a=s.answers['q'+i]||'';iHtml+='<span class="mv '+(a?'v'+a:'vn')+'" style="padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700">'+(a||'—')+'</span>';}
+    iHtml+='</div><span style="font-weight:700;color:#002A5C;min-width:60px;text-align:right">'+isc+' pts</span>';
+    // Show reflection if available
+    if(s.reflection&&(s.reflection.r1||s.reflection.r2)){
+     iHtml+='<details style="width:100%;margin-top:4px"><summary style="font-size:11px;color:#6B7A8D;cursor:pointer">View reflection</summary>';
+     if(s.reflection.r1)iHtml+='<div style="font-size:11px;color:#0A1628;padding:4px 0"><strong>Difficult decision:</strong> '+s.reflection.r1+'</div>';
+     if(s.reflection.r2)iHtml+='<div style="font-size:11px;color:#0A1628;padding:4px 0"><strong>Domain &amp; tool:</strong> '+s.reflection.r2+'</div>';
+     iHtml+='</details>';
+    }
+    iHtml+='</div>';
+   });
+  }
+  if(gd){
+   iHtml+='<div style="margin-top:7px;font-size:10px;font-weight:700;color:#6B7A8D;margin-bottom:4px;text-transform:uppercase">Group decision</div>';
+   iHtml+='<div class="imr"><span style="flex:1;font-weight:700">Final answers</span><div class="ians">';
+   for(var i=1;i<=5;i++){var a=gd.answers['q'+i]||'';iHtml+='<span class="mv '+(a?'v'+a:'vn')+'" style="padding:2px 8px;border-radius:3px;font-size:11px;font-weight:700">'+(a||'—')+'</span>';}
+   iHtml+='</div><span style="font-weight:700;color:#1A7A4A;min-width:60px;text-align:right">'+gsc+' pts</span></div>';
+  }
+  if(rrData&&rrData.rows){var cnt=rrData.rows.filter(function(row){return!row.isEx&&row.name&&row.name!=='Click Edit to name this risk';}).length;if(cnt>0)iHtml+='<div style="margin-top:5px;font-size:11px;color:#6B7A8D">Risk Register: <strong>'+cnt+' risks</strong> entered</div>';}
+  iHtml+='</div>';
+ });
+ if(!iHtml)iHtml='<div class="emp"><h4>No submissions yet</h4><p>Students appear here after they submit their decisions.</p></div>';
+ document.getElementById('iGroups').innerHTML=iHtml;
+
+ // Answer key
+ var ak='';
+ if(r){r.qs.forEach(function(q,i){
+  ak+='<div style="margin-bottom:10px;padding:10px;background:#fff;border-radius:8px;border:2px solid #E0E4EA"><div style="font-size:11px;font-weight:700;color:#002A5C;margin-bottom:7px">Decision '+(i+1)+' (Correct: <strong>'+q.a+'</strong>): '+q.q+'</div>';
+  ['A','B','C','D'].forEach(function(l){
+   var pts=q.p[l];var isA=l===q.a;
+   var bg=pts===10?'#E1F5EE':pts>=7?'#EBF2FB':pts>=4?'#FFF3CD':pts===0?'#F4F6FA':'#FCEBEB';
+   var fg=pts===10?'#1A7A4A':pts>=7?'#0C447C':pts>=4?'#854F0B':pts===0?'#6B7A8D':'#C0392B';
+   ak+='<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 8px;border-radius:5px;margin-bottom:3px;'+(isA?'background:#E1F5EE;border:1px solid #1A7A4A':'')+'">'+
+    '<span style="font-weight:700;min-width:16px;color:'+(isA?'#1A7A4A':'#6B7A8D')+'">'+l+'</span>'+
+    '<span style="font-size:12px;flex:1;color:'+(isA?'#1A7A4A':'#6B7A8D')+'">'+q.o[l]+'</span>'+
+    '<span style="font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;background:'+bg+';color:'+fg+'">'+(pts>0?'+':'')+pts+' pts</span>'+
+    (isA?'<span style="font-size:10px;background:#1A7A4A;color:#fff;padding:2px 8px;border-radius:3px;font-weight:700;white-space:nowrap">BEST ANSWER</span>':'')+
+    '</div>';
+  });
+  ak+='</div>';
+ });}
+ var akEl=document.getElementById('iAK');if(akEl)akEl.innerHTML=ak;
+}
+</script>
+</body>
+</html>
